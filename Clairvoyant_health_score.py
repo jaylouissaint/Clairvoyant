@@ -108,21 +108,10 @@ spy_comp = prices_comp[BENCH]
 spy_ret3_comp  = trailing_return(spy_comp, 63)
 spy_ret12_comp = trailing_return(spy_comp, 252)
 
-def get_labels_safe(ticker):
-    info = {}
-    try:
-        tk = yf.Ticker(ticker)
-        info = tk.get_info() if hasattr(tk, "get_info") else tk.info
-    except Exception:
-        pass
-    sector = info.get("sector") if isinstance(info, dict) else None
-    industry = info.get("industry") if isinstance(info, dict) else None  # <-- Yahoo "industry" (we'll use as Sub_Industry)
-    long_name = info.get("longName") if isinstance(info, dict) else None
-    return sector, industry, long_name
-
 # Collect company and sub-industry tables across all TOP5 ETFs
+
 all_comp_rows = []
-all_sub_rows  = []
+all_sub_rows = []
 
 for item in TOP5:
     parent_industry = item["Industry"]  # will become our "Industry" column
@@ -266,7 +255,4 @@ Final_Financial_Dataframe_unique = (
 print("Unique companies:", Final_Financial_Dataframe_unique["Company"].nunique(),
       "| Rows:", len(Final_Financial_Dataframe_unique))
 
-# 3) export (Colab)
-Final_Financial_Dataframe_unique.to_csv("Final_Financial_Dataframe_unique.csv", index=False)
-print("Saved: Final_Financial_Dataframe_unique.csv")
 #github test
