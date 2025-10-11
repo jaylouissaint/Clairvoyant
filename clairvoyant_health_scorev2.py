@@ -196,6 +196,8 @@ else:
     companies_enriched["Sub_Industry_Excess_Return_3m"] = np.nan
     companies_enriched["Sub_Industry_Vol_12m"] = np.nan
 
+
+
 # 2) Merge in industry-level metrics (on Industry name == ETF_Name)
 companies_enriched = companies_enriched.merge(
     industry_metrics.drop(columns=["Ticker"]),
