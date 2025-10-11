@@ -1,0 +1,80 @@
+Overview
+
+Step 1: Calculating the Health Score
+
+We began by developing a composite Health Score, a metric designed to measure financial “health” by integrating both performance (returns) and risk (volatility and drawdowns).
+The score is calculated using the following formula:
+
+Health Score
+=
+100 × (0.45𝑧(Excess 12M Return)
++ 0.35𝑧(Excess 3M Return)
+− 0.10𝑧(Volatility)
+−0.10𝑧(∣Max Drawdown∣))
+
+
+Purpose of each term:
+
+Excess 12-Month Return (45%) – Captures sustained performance relative to the S&P 500 benchmark (SPY).
+
+Excess 3-Month Return (35%) – Reflects short-term momentum and emerging strength.
+
+Volatility and Max Drawdown (20% total, negative weight) – Penalize instability and large price drops, rewarding steady performance.
+
+Scaling by 100 – Converts the z-score composite into an interpretable index.
+
+This weighting scheme ensures that the model prioritizes sustained growth while still recognizing recent performance and penalizing excessive risk.
+
+
+
+Step 2: Applying the Metric Across Three Analytical Layers
+
+The health score was consistently applied across three levels of granularity:
+
+Industry-Level (ETF Proxies):
+Using broad sector ETFs, each industry’s performance and risk were benchmarked against the S&P 500 to calculate its Industry Health Score. This identifies which sectors are outperforming the broader market.
+
+Sub-Industry Level:
+For each top-performing industry, the code retrieves the ETF’s  individual companies and aggregates their mean returns and median risk metrics. This identifies which sub-industries (e.g., Telecom Services, Semiconductors) drive each sector’s overall strength.
+
+Company-Level:
+At the most granular level, firm-specific 3- and 12-month returns, excess returns, and volatility are calculated relative to SPY. This allows for consistent comparison across companies and markets, producing a Company Health Score within each sub-industry.
+
+
+
+
+Step 3: Identifying Top-Performing Industries
+
+Once Health Scores were computed for all industries, the script automatically selects the top five industries based on their Industry Health Score.
+Dynamic filtering (TOP5) ensures that the selection updates whenever the data or time horizon changes.
+
+
+
+Step 4: Retrieving ETF Holdings and Sub-Industry Analysis
+
+For each of the top industries, the script pulls the top holdings from ETF data via the Yahoo Finance API using a custom get_top_holdings() function.
+This function attempts multiple retrieval methods (e.g., .fund_holdings, .get_fund_holdings(), .info) to ensure compatibility across ETF data sources.
+The resulting company lists are then used to calculate Sub-Industry Health Scores using the same formula as the Industry level.
+
+This stage determines which segments (such as “Internet Content & Information” within Communication Services) are driving industry performance.
+
+Step 5: Identifying Industry Leaders
+
+Following the Efficient Market Hypothesis, which assumes that a company’s market capitalization reflects all available public information, industry leaders were identified as the firms with the largest market capitalizations within each top-performing sub-industry.
+This method ensures that our focus remains on financially sound, stable, and well-regarded firms that are representative of broader market strength.
+
+These firms are most likely to align with ClAIrvoyant’s target profile—organizations with consistent growth, stability, and resources to invest in advanced talent acquisition technologies.
+
+Step 6: Visual Analysis
+
+After identifying the top industries and leading companies, we transitioned into visual exploration to validate findings and uncover additional insights:
+
+Bar plots compare average health scores across industries.
+
+Scatterplots visualize the relationship between return and volatility, highlighting sectors that balance growth and stability.
+
+Heatmaps illustrate relationships between hiring activity (e.g., job postings) and financial strength.
+
+Correlation matrices reveal the association between popularity indicators (LinkedIn followers, views) and financial health metrics.
+
+These visuals collectively help determine whether market “hype” aligns with actual performance, a crucial consideration in selecting viable anchor clients.

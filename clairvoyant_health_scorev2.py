@@ -1,4 +1,4 @@
-from clairvoyant_helper_functions import trailing_return, realized_vol, max_drawdown, zscore, get_labels_safe
+from clairvoyant_helper_functions import trailing_return, realized_vol, max_drawdown, zscore, get_labels_safe, get_top_holdings
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -21,8 +21,7 @@ EXTRA_INDUSTRY_ETFS = {
     "Semiconductors": "SOXX",
     "Software": "IGV",
     "Aerospace & Defense": "ITA"
-
-
+}
 ALL = {**SECTOR_ETFS, **EXTRA_INDUSTRY_ETFS}
 BENCH = "SPY"
 
@@ -53,7 +52,6 @@ for ind_name, ind_ticker in ALL.items():
         "Vol_1y": vol,
         "MaxDD_3y": mdd
     })
-
 df_ind = pd.DataFrame(rows_ind)
 
 # HealthScore (industry) from EXCESS returns + lower risk
@@ -73,34 +71,32 @@ industry_metrics = df_ind.rename(columns={
     "Excess_3m": "Industry_Excess_Return_3m",
     "Vol_1y": "Industry_Vol_12m"
 })[[
-    "Industry", "Industry_Health_Score",
+    "Industry", "Ticker", "Industry_Health_Score",
     "Industry_Return_12m", "Industry_Return_3m",
     "Industry_Excess_Return_12m", "Industry_Excess_Return_3m",
     "Industry_Vol_12m"
 ]]
 
+# ---------- NEW: Pick Top 5 industries dynamically ----------
+TOP_N = 5
+top_rows = (df_ind
+            .sort_values("Industry_Health_Score", ascending=False)
+            .head(TOP_N)[["Industry","Ticker"]])
+TOP5 = [{"Industry": r.Industry, "Ticker": r.Ticker} for r in top_rows.itertuples(index=False)]
+
+
+# ---------- Build ETF -> tickers map from live holdings (with safe fallback) ----------
+ETF_TO_TICKERS = {}
+for item in TOP5:
+    etf = item["Ticker"]
+    holdings = get_top_holdings(etf, top_k=20)
+    # If API gave nothing, you can optionally seed a minimal list (commented)
+    # if not holdings and etf in {"ITA","VGT","VOX","SOXX","IGV","IYC"}:
+    #     holdings = ["AAPL","MSFT","NVDA"]  # placeholder fallback
+    ETF_TO_TICKERS[etf] = holdings
+
 # ---------- Block 2: Company + Sub-Industry (TOP5 ETFs vs SPY) ----------
-TOP5 = [
-    {"Industry": "Aerospace & Defense", "Ticker": "ITA"},
-    {"Industry": "Technology", "Ticker": "VGT"},
-    {"Industry": "Communication Services", "Ticker": "VOX"},
-    {"Industry": "Technology", "Ticker": "SOXX"},  # thematic sub-sector ETF
-    {"Industry": "Software", "Ticker": "IGV"},
-    {"Industry": "Consumer Discretionary", "Ticker": "IYC"}
-
-]
-
-ETF_TO_TICKERS = {
-    "ITA": ["RTX", "BA", "LHX", "NOC", "GD", "HII", "TDG", "TXT", "LMT"],
-    "VOX": ["NFLX", "GOOGL", "T", "META", "DIS", "TMUS", "VZ", "CHTR", "CMCSA"],
-    "VGT": ["AVGO", "NVDA", "CSCO", "AAPL", "CRM", "ACN"],
-    "IGV": ["PLTR", "SNOW", "ORCL", "PANW", "MSFT", "INTU", "NOW", "TEAM", "ADBE"],
-    "SOXX": ["NVDA", "AVGO"],
-    "IYC": ["TSLA", "BKNG", "TJX", "AMZN", "HD", "MCD", "LOW", "SBUX", "NKE"],
-}
-
-# Build full company list and download prices + SPY
-ALL_TICKERS_2 = sorted(set(t for item in TOP5 for t in ETF_TO_TICKERS.get(item["Ticker"], []) if isinstance(t, str)))
+ALL_TICKERS_2 = sorted({t for it in TOP5 for t in ETF_TO_TICKERS.get(it["Ticker"], []) if isinstance(t, str)})
 prices_comp = yf.download(ALL_TICKERS_2 + [BENCH], period="3y", interval="1d",
                           auto_adjust=True, progress=False)["Close"]
 
@@ -108,13 +104,10 @@ spy_comp = prices_comp[BENCH]
 spy_ret3_comp  = trailing_return(spy_comp, 63)
 spy_ret12_comp = trailing_return(spy_comp, 252)
 
-# Collect company and sub-industry tables across all TOP5 ETFs
-
-all_comp_rows = []
-all_sub_rows = []
+all_comp_rows, all_sub_rows = [], []
 
 for item in TOP5:
-    parent_industry = item["Industry"]  # will become our "Industry" column
+    parent_industry = item["Industry"]      # will become our "Industry" column
     etf_ticker = item["Ticker"]
     tickers = [t for t in ETF_TO_TICKERS.get(etf_ticker, []) if t in prices_comp.columns]
 
@@ -155,7 +148,6 @@ for item in TOP5:
     else:
         comp_df["Company_Health_Score"] = np.nan
 
-    # append to global list
     all_comp_rows.append(comp_df)
 
     # --- sub-industry aggregation inside this ETF ---
@@ -206,19 +198,18 @@ else:
 
 # 2) Merge in industry-level metrics (on Industry name == ETF_Name)
 companies_enriched = companies_enriched.merge(
-    industry_metrics,
+    industry_metrics.drop(columns=["Ticker"]),
     left_on="ETF_Name",
     right_on="Industry",
-    how="left",
-    suffixes=("","")
+    how="left"
 )
 
-# ---------- Final selection & renaming ----------
+# ---------- Final selection & de-dup ----------
 Final_Financial_Dataframe = companies_enriched.rename(columns={
     "ETF_Name": "Industry"
 })[[
     "Company",
-    "Industry",               # parent industry from TOP5/ETF
+    "Industry",
     "Sub_Industry",
 
     "Company_Health_Score",
@@ -243,8 +234,7 @@ Final_Financial_Dataframe = companies_enriched.rename(columns={
     "Company_Excess_Return_3m",
     "Company_Vol_12m",
 ]]
-# Show unique company names
-# 2) keep the row with the highest Company_Health_Score for each company
+
 Final_Financial_Dataframe_unique = (
     Final_Financial_Dataframe
     .sort_values(["Company_Health_Score", "Industry_Health_Score"], ascending=False)
@@ -252,5 +242,7 @@ Final_Financial_Dataframe_unique = (
     .reset_index(drop=True)
 )
 
-print("Unique companies:", Final_Financial_Dataframe_unique["Company"].nunique(),
+print("Top industries (dynamic):")
+print(top_rows.to_string(index=False))
+print("\nUnique companies:", Final_Financial_Dataframe_unique["Company"].nunique(),
       "| Rows:", len(Final_Financial_Dataframe_unique))
