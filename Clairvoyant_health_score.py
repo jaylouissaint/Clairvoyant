@@ -1,4 +1,4 @@
-from clairvoyant_helper_functions import trailing_return, realized_vol, max_drawdown, zscore
+from clairvoyant_helper_functions import trailing_return, realized_vol, max_drawdown, zscore, get_labels_safe
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -254,5 +254,3 @@ Final_Financial_Dataframe_unique = (
 
 print("Unique companies:", Final_Financial_Dataframe_unique["Company"].nunique(),
       "| Rows:", len(Final_Financial_Dataframe_unique))
-
-#github test

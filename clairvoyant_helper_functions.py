@@ -4,6 +4,7 @@ import yfinance as yf
 
 # ---------- Helper functions ----------
 
+
 def trailing_return(series, lookback_days):
     s = series.dropna()
     if len(s) < lookback_days + 1:
