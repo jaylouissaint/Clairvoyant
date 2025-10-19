@@ -6,7 +6,8 @@ library(scales)
 
 
 
-df <- read.csv("/Users/aishanipradhan/Downloads/final_data_merged.csv")
+#df <- read.csv("/Users/aishanipradhan/Downloads/final_data_merged.csv")
+df <- read.csv('/Users/louis/Desktop/CMU Grad/Fall/Professional Skills/Clairvoyant/final_data.csv')
 
 # graph 1
 # Summarize for Aerospace

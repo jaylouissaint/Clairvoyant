@@ -1,0 +1,315 @@
+---
+title: "Clairvoyant Project, Fall 2025"
+author: 
+- "Team Joey"
+format:
+  pdf:
+    colorlinks: true
+---
+
+## 
+
+```{r Imports}
+library(readr)
+library(ggplot2)
+final_data_merged <- read_csv("Data/Clean/final_data_merged.csv")
+```
+
+```{r Graph1}
+ggplot(final_data_merged, 
+       aes(x = Industry, y = Industry_Health_Score)) +
+  stat_summary(fun = "mean", geom = "bar", fill = "blue") +
+  labs(
+    title = "Industry Health Score",
+    x = "Industry",
+    y = "Health Score"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid = element_blank(),                 # removes all grid lines
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 9),
+    legend.position = "none"
+  )
+
+```
+
+```{r Graph2}
+ggplot(final_data_merged, aes(x = Industry_Vol_12m, 
+                              y = Industry_Return_12m,
+                              color = Industry)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(
+    title = "Industry Risk vs. Return (12-Month)",
+    x = "Volatility (1-Year)",
+    y = "12-Month Return (%)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+```
+
+**Interpretation:**\
+
+Top-left = strong returns with low risk → healthiest industries.\
+
+Bottom-right = poor returns, high risk → weak industries.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+final_data_merged %>%
+  filter(Industry %in% c("Communication Services", "Aerospace & Defense")) %>%
+  ggplot(aes(x = Company_Vol_12m, 
+             y = Company_Return_12m, 
+             color = Industry)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_text(aes(label = Company), vjust = -1, size = 3) +
+  labs(
+    title = "Company Risk vs. Return (12-Month)",
+    subtitle = "Focused on Communication Services and Aerospace & Defense",
+    x = "Company Volatility (1-Year)",
+    y = "12-Month Return (%)"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(size = 14, face = "bold"),
+    axis.title = element_text(size = 12)
+  )
+
+
+```
+
+```{r}
+library(GGally)
+df <- final_data_merged %>%
+  select(Industry_Return_3m, Industry_Return_12m, Industry_Vol_12m, Industry_Health_Score)
+ggcorr(df, label = TRUE)
+
+```
+
+```{r}
+ggplot(final_data_merged, aes(x = Company_Vol_12m, 
+                              y = Company_Return_12m,
+                              color = Industry)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(
+    title = "Industry Risk vs. Return (12-Month)",
+    x = "Volatility (1-Year)",
+    y = "12-Month Return (%)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Filter to just Communication Services and Aerospace & Defense
+plot_data <- final_data_merged %>%
+  filter(Industry %in% c("Communication Services", "Aerospace & Defense"))
+
+# Add a highlight flag for Verizon
+plot_data <- plot_data %>%
+  mutate(highlight = ifelse(grepl("Verizon", Company, ignore.case = TRUE), "Verizon", "Other"))
+
+# Plot
+ggplot(plot_data, aes(x = Company_Vol_12m, y = Company_Return_12m)) +
+  geom_point(aes(color = highlight, size = highlight), alpha = 0.8) +
+  scale_color_manual(values = c("Verizon" = "red", "Other" = "gray70")) +
+  scale_size_manual(values = c("Verizon" = 4, "Other" = 2)) +
+  geom_text(
+    data = subset(plot_data, highlight == "Verizon"),
+    aes(label = Company),
+    vjust = -1,
+    color = "red",
+    fontface = "bold",
+    size = 3.5
+  ) +
+  labs(
+    title = "Company Risk vs. Return (12-Month)",
+    subtitle = "Highlighting Verizon Communications Inc.",
+    x = "Company Volatility (1-Year)",
+    y = "Company Return (1-Year)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold"),
+    axis.title = element_text(size = 12)
+  ) +
+  # ✅ Extend the x-axis range to add more space on the left
+  expand_limits(x = min(plot_data$Company_Vol_12m, na.rm = TRUE) * 0.8)
+
+
+
+```
+
+```{r}
+ggplot(final_data_merged, aes(x = Company_Vol_12m, 
+                              y = Company_Return_12m,
+                              color = Industry)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(
+    title = "Industry Risk vs. Return (12-Month)",
+    x = "Volatility (1-Year)",
+    y = "Return (1-Year))"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(final_data_merged, aes(x = Industry, y = Industry_Health_Score)) +
+  stat_summary(fun = mean, geom = "col", fill = "#1f77b4") +
+  labs(
+    title = "Industry Health Score",
+    x = "Industry",
+    y = "Health Score"
+  ) +
+  theme_minimal(base_size = 12,base_family = "Helvetica" ) +  
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 9),
+    panel.grid = element_blank(),
+    legend.position = "none"
+  )
+
+```
+```{r}
+ggplot(final_data_merged, aes(x = Industry_Vol_12m, 
+                              y = Industry_Return_12m,
+                              color = Industry)) +
+  geom_point(size = , alpha = 0.8) +
+  labs(
+    title = "Industry Risk vs. Return (12-Month)",
+    x = "Volatility (1-Year)",
+    y = "12-Month Return (%)"
+  ) +
+  theme_minimal(base_size = 12, base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.text.x = element_text(hjust = 1, size = 9)
+  )
+
+
+```
+
+```{r}
+ggplot(final_data_merged, aes(x = Company_Vol_12m, 
+                              y = Company_Return_12m,
+                              color = Industry)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(
+    title = "Company Risk vs. Return (12-Month)",
+    x = "Volatility (1-Year)",
+    y = "Return (1-Year)"
+  ) +
+  theme_minimal(base_size = 12, base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.text.x = element_text(hjust = 1, size = 9)
+  )
+
+```
+
+
+
+
+
+
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Filter to just Communication Services and Aerospace & Defense
+plot_data <- final_data_merged %>%
+  filter(Industry %in% c("Communication Services", "Aerospace & Defense"))
+
+# Add a highlight flag for Verizon
+plot_data <- plot_data %>%
+  mutate(highlight = ifelse(grepl("Verizon", Company, ignore.case = TRUE), "Verizon", "Other"))
+
+# Plot
+ggplot(plot_data, aes(x = Company_Vol_12m, y = Company_Return_12m)) +
+  geom_point(aes(color = highlight, size = highlight), alpha = 0.8) +
+  scale_color_manual(values = c("Verizon" = "red", "Other" = "gray70")) +
+  scale_size_manual(values = c("Verizon" = 4, "Other" = 2)) +
+  geom_text(
+    data = subset(plot_data, highlight == "Verizon"),
+    aes(label = Company),
+    vjust = -1,
+    color = "red",
+    fontface = "bold",
+    size = 3.5
+  ) +
+  labs(
+    title = "Company Risk vs. Return (12-Month)",
+    subtitle = "Highlighting Verizon Communications Inc.",
+    x = "Company Volatility (1-Year)",
+    y = "Company Return (1-Year)"
+  ) +
+  expand_limits(x = min(plot_data$Company_Vol_12m, na.rm = TRUE) * 0.8)+
+  theme_minimal(base_size = 12, base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.text.x = element_text(hjust = 1, size = 9),
+    legend.position = "none"
+  )
+
+```
+
+
+```{r}
+final_data_merged <- final_data_merged %>%
+  group_by(Industry) %>%
+  mutate(job_postings = n()) %>%
+  ungroup()
+
+ggplot(final_data_merged, aes(x = Industry_Vol_12m, 
+                              y = Industry_Return_12m,
+                              color = Industry,
+                              size = job_postings)) +   # use job_postings here
+  geom_point(alpha = 0.8) +
+  scale_color_manual(values = c("#7AC5CD", "#FF7F50", "#BCEE68", "#EEA9b8", "#836FFF")) +
+  labs(
+    title = "Industry Risk vs. Return (12-Month)",
+    x = "Volatility (1-Year)",
+    y = "Return (1-Year)",
+    size = "Job Postings (Millions)"
+  ) +
+  #scale_size_continuous(
+  #  labels = label_number(scale = 1e-6, suffix = "M"),
+   # range = c(2, 10)  # optional: tweak point sizes
+  #) 
+
+  scale_size_continuous( labels = label_comma())+
+  theme_minimal(base_size = 12, base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.text.x = element_text(hjust = 1, size = 9)
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
