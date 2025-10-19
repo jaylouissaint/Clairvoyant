@@ -40,9 +40,39 @@ ggplot(df,
 
 ```
 
-```{r Graph2}
+```{r RiskReturnScatterplot, message=FALSE}
 
+final_data_merged <- df %>%
+  group_by(industry) %>%
+  mutate(job_postings = n()) %>%
+  ungroup()
 
+# calculate averages
+avg_vol <- mean(final_data_merged$industry_vol_12m, na.rm = TRUE)
+avg_ret <- mean(final_data_merged$industry_return_12m, na.rm = TRUE)
+
+ggplot(final_data_merged, aes(x = industry_vol_12m,
+                              y = industry_return_12m,
+                              color = industry,
+                              size = job_postings)) +
+  geom_point(alpha = 0.8) +
+  geom_hline(yintercept = avg_ret, linetype = "dashed", color = "black", size = 0.8) +
+  geom_vline(xintercept = avg_vol, linetype = "dashed", color = "black", size = 0.8) +
+  scale_color_manual(values = c("#7AC5CD", "#FF7F50", "#BCEE68", "#EEA9b8", "#836FFF")) +
+  labs(
+    title = "Industry Return vs. Risk",
+    x = "Volatility (%)",
+    y = "Return (%)",
+    size = "Number of Job Postings (Hundred of Thousands)",
+    caption = "Dashed horizontal line: Average Return across industries\nDashed vertical line: Average Volatility across industries"
+  ) +
+  scale_size_continuous(labels = label_comma()) +
+  theme_minimal(base_size = 12, base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.text.x = element_text(hjust = 1, size = 9),
+    plot.caption = element_text(hjust = 1, vjust = 1, size = 10, face = "italic")
+  )
 
 ```
 
