@@ -22,12 +22,19 @@ library(scales)
 df <- read.csv('/Users/louis/Desktop/CMU Grad/Fall/Professional Skills/Clairvoyant/final_data.csv')
 ```
 
-```{r Graph1}
+```{r Aesthetics}
+clairvoyant_purple <- "#6957cd"
+clairvoyant_palette <- c(
+  "#4b3e8f","#6957cd","#402b2a","#4281a3","#c6b9f6","#140f49","#b9cadd"
+)
+```
+
+```{r Histogram}
 ggplot(df, 
        aes(x = industry, y = industry_health_score)) +
-  stat_summary(fun = "mean", geom = "bar", fill = "blue") +
+  stat_summary(fun = "mean", geom = "bar", fill = clairvoyant_purple, color = "black", width = 1 ) +
   labs(
-    title = "Industry Health Score",
+    title = "Top 5 Industries by Health Score Metric",
     x = "Industry",
     y = "Health Score"
   ) +
@@ -40,46 +47,56 @@ ggplot(df,
 
 ```
 
-```{r RiskReturnScatterplot, message=FALSE}
 
-final_data_merged <- df %>%
+
+```{r RiskReturnScatterplot}
+
+df_labels <- final_data_merged %>%
   group_by(industry) %>%
-  mutate(job_postings = n()) %>%
-  ungroup()
+  summarize(
+    industry_vol_12m = mean(industry_vol_12m, na.rm = TRUE),
+    industry_return_12m = mean(industry_return_12m, na.rm = TRUE),
+    job_postings = mean(job_postings, na.rm = TRUE)
+  )
 
-# calculate averages
-avg_vol <- mean(final_data_merged$industry_vol_12m, na.rm = TRUE)
-avg_ret <- mean(final_data_merged$industry_return_12m, na.rm = TRUE)
 
-ggplot(final_data_merged, aes(x = industry_vol_12m,
+
+# Calculate averages
+avg_vol <- mean(df_labels$industry_vol_12m, na.rm = TRUE)
+avg_ret <- mean(df_labels$industry_return_12m, na.rm = TRUE)
+
+ggplot(df_labels, aes(x = industry_vol_12m,
                               y = industry_return_12m,
                               color = industry,
                               size = job_postings)) +
   geom_point(alpha = 0.8) +
-  geom_hline(yintercept = avg_ret, linetype = "dashed", color = "black", size = 0.8) +
-  geom_vline(xintercept = avg_vol, linetype = "dashed", color = "black", size = 0.8) +
-  scale_color_manual(values = c("#7AC5CD", "#FF7F50", "#BCEE68", "#EEA9b8", "#836FFF")) +
+  # Add text labels for industries
+  geom_text(aes(label = industry),
+            vjust = -1,        # vertical position above the point
+            size = 3.5,
+            fontface = "bold",
+            show.legend = FALSE) +
+  geom_hline(yintercept = avg_ret, linetype = "dashed", color = "black", size = 0.5,alpha=.2) +
+  geom_vline(xintercept = avg_vol, linetype = "dashed", color = "black", size = 0.5, alpha=.2) +
+  scale_color_manual(values = clairvoyant_palette) +  # use your custom color palette
   labs(
-    title = "Industry Return vs. Risk",
-    x = "Volatility (%)",
-    y = "Return (%)",
-    size = "Number of Job Postings (Hundred of Thousands)",
-    caption = "Dashed horizontal line: Average Return across industries\nDashed vertical line: Average Volatility across industries"
-  ) +
-  scale_size_continuous(labels = label_comma()) +
+    title = "Industries in the Top Left Quadrant are the most attractive",
+    x = "Volatility",
+    y = "Return over S&P",
+    size = "Number of Job Postings (Hundred of Thousands)") +
+  scale_size_continuous(labels = scales::label_comma()) +
   theme_minimal(base_size = 12, base_family = "Helvetica") +
   theme(
     plot.title = element_text(hjust = 0.5, face = "bold"),
     axis.text.x = element_text(hjust = 1, size = 9),
-    plot.caption = element_text(hjust = 1, vjust = 1, size = 10, face = "italic")
-  )
+    plot.caption = element_text(hjust = 1, vjust = 1, size = 10, face = "italic"),
+    legend.position = "none"  # removes the legend entirely
+  )+
+  coord_cartesian(
+    xlim = c(min(df_labels$industry_vol_12m, na.rm = TRUE) - .05,
+             max(df_labels$industry_vol_12m, na.rm = TRUE) + .05),  # expands both sides of x
+    ylim = c(min(df_labels$industry_return_12m, na.rm = TRUE),
+             max(df_labels$industry_return_12m, na.rm = TRUE) + .05) )# expands upper y bound
+
 
 ```
-
-```{r Graph3}
-
-
-
-
-```
-
