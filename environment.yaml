@@ -1,0 +1,33 @@
+name: clairvoyant-env
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  # -------- Python --------
+  - python=3.11
+  - pip
+  - pandas
+  - numpy
+  - yfinance
+  - matplotlib
+  - seaborn
+  - jupyter
+
+  # -------- R --------
+  - r-base=4.3
+  - r-tidyverse
+  - r-ggplot2
+  - r-dplyr
+  - r-tidyr
+  - r-readr
+  - r-scales
+  - r-ggcorrplot
+  - r-ggally
+  - r-tidyquant
+  - r-zoo
+  - r-lubridate
+
+  # -------- Quarto --------
+  - quarto

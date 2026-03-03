@@ -47,3 +47,7 @@ A focused comparison of example companies vs the S&P 500:
 ### Python
 ```bash
 pip install -r requirements.txt
+
+
+## Data is available for dowload at the link below
+https://www.kaggle.com/datasets/arshkon/linkedin-job-postings
