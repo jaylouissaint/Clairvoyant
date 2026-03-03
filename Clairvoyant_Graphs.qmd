@@ -32,7 +32,7 @@ clairvoyant_palette <- c(
 ```{r Histogram}
 ggplot(df, 
        aes(x = industry, y = industry_health_score)) +
-  stat_summary(fun = "mean", geom = "bar", fill = clairvoyant_purple, color = "black", width = 1 ) +
+  stat_summary(fun = "mean", geom = "bar", fill = "#b9cadd", color = "black", width = 1 ) +
   labs(
     title = "Top 5 Industries by Health Score Metric",
     x = "Industry",
