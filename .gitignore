@@ -1,4 +1,62 @@
-.Rproj.user
+# Data files
+
+data/
+output/
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.rds
+*.feather
+
+# Allow example small demo file if needed
+!data/README.md
+
+
+# Python
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+venv/
+.env
+.env.*
+.python-version
+
+.ipynb_checkpoints/
+
+# Mac / Windows junk
+.DS_Store
+Thumbs.db
+
+
+# R
+
 .Rhistory
 .RData
+.Rproj.user/
 .Ruserdata
+
+# renv
+renv/library/
+renv/staging/
+
+
+# Render Outputs
+
+*.html
+*.pdf
+*.docx
+
+# If Quarto creates _site
+_site/
+
+
+# IDE configs
+
+.vscode/
+.idea/
+*.Rproj
