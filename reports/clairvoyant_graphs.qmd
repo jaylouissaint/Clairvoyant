@@ -1,0 +1,107 @@
+---
+title: "Clairvoyant Project, Fall 2025"
+author:
+  - "Team Joey"
+format:
+  pdf:
+    colorlinks: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+# Core libraries
+library(readr)
+library(dplyr)
+
+# Plot helpers
+source("R/plot_functions.R")
+
+# Where to save images
+OUT_DIR <- "output"
+dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
+```
+
+## Data
+
+This report expects a cleaned dataset (CSV) produced by the pipeline.
+By default, it loads `data/final_data.csv`.
+
+```{r}
+df <- read_csv("data/final_data.csv", show_col_types = FALSE)
+```
+
+## Industry Health Score
+
+```{r}
+p_industry_bar <- plot_top_industries_bar(df,
+                        industry_col = "industry",
+                        score_col = "industry_health_score")
+save_plot(p_industry_bar, "industry_health_bar.png", out_dir = OUT_DIR)
+p_industry_bar
+```
+
+## Industry Risk vs Return (size = job postings)
+
+```{r}
+df_labels <- summarize_industry_risk_return(
+  df,
+  industry_col = "industry",
+  vol_col = "industry_vol_12m",
+  ret_col = "industry_excess_return_12m",
+  job_postings_col = "job_postings"
+)
+
+p_risk_return <- plot_industry_risk_return(df_labels)
+save_plot(p_risk_return, "industry_risk_return.png", out_dir = OUT_DIR)
+p_risk_return
+
+```
+
+## Distributions of key metrics
+
+p_dist <- plot_distributions(```{r}
+p_dist <- plot_distributions(
+  df,
+  cols = c(
+    "views",
+    "follower_count",
+    "industry_health_score",
+    "industry_return_12m",
+    "industry_vol_12m",
+    "company_health_score",
+    "company_return_12m",
+    "company_excess_return_12m",
+    "company_vol_12m"
+  )
+)
+save_plot(p_dist, "metric_distributions.png", out_dir = OUT_DIR)
+p_dist
+```)
+```
+
+## Correlation matrix (hiring signals vs company metrics)
+
+```{r}
+# Example: Communication Services correlation view
+df_comms <- df %>%
+  filter(industry == "communication services") %>%
+  group_by(finance_name) %>%
+  summarize(
+    views = mean(views, na.rm = TRUE),
+    follower_count = mean(follower_count, na.rm = TRUE),
+    company_health_score = mean(company_health_score, na.rm = TRUE),
+    company_return_12m = mean(company_return_12m, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+p_corr <- plot_correlation_matrix(
+  df_comms,
+  title = "Communication Services (company-level averages)",
+  cols = c("views", "follower_count", "company_health_score", "company_return_12m")
+)
+save_plot(p_corr, "comms_correlation_matrix.png", out_dir = OUT_DIR)
+p_corr
+```
