@@ -1,33 +1,26 @@
-name: clairvoyant-env
+name: clairvoyantenv
 
 channels:
   - conda-forge
-  - defaults
 
 dependencies:
-  # -------- Python --------
+  # Python (pipeline)
   - python=3.11
   - pip
-  - pandas
   - numpy
+  - pandas
   - yfinance
-  - matplotlib
-  - seaborn
-  - jupyter
 
-  # -------- R --------
-  - r-base=4.3
-  - r-tidyverse
-  - r-ggplot2
-  - r-dplyr
-  - r-tidyr
-  - r-readr
-  - r-scales
+  #  R (visuals + time series)
+  - r-base>=4.3
+  - r-tidyverse        # includes ggplot2, dplyr, tidyr, readr, etc.
+  - r-tidyquant        # tq_get for market data
+  - r-zoo              # rollapply
   - r-ggcorrplot
   - r-ggally
-  - r-tidyquant
-  - r-zoo
+  - r-scales
   - r-lubridate
 
-  # -------- Quarto --------
-  - quarto
+   #  pip packages 
+  - pip:
+      - requests-cache

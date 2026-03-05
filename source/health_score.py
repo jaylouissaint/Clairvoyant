@@ -172,21 +172,25 @@ def pick_top_industries(industry_metrics: pd.DataFrame, top_n: int = 5) -> pd.Da
     )
 
 
-def build_etf_to_tickers_map(
-    top_industries: pd.DataFrame,
-    top_k_holdings: int = 20,
-) -> Dict[str, List[str]]:
-    """
-    For each ETF in `top_industries`, fetch the top holdings tickers via yfinance.
+def build_etf_to_tickers_map(top_industries: pd.DataFrame, top_k_holdings: int = 20) -> Dict[str, List[str]]:
+    """Map ETF ticker -> top holdings tickers. Uses a fallback list if yfinance holdings are unavailable."""
+    FALLBACK = {
+        "ITA": ["RTX", "BA", "LHX", "NOC", "GD", "HII", "TDG", "TXT", "LMT"],
+        "SOXX": ["NVDA", "AVGO", "AMD", "QCOM", "TXN", "INTC", "LRCX", "AMAT", "MRVL", "MU"],
+        "VGT": ["AAPL", "MSFT", "NVDA", "AVGO", "CRM", "ADBE", "CSCO", "ORCL", "ACN"],
+        "VOX": ["GOOGL", "META", "NFLX", "DIS", "TMUS", "VZ", "T", "CHTR", "CMCSA"],
+        "IGV": ["MSFT", "ORCL", "ADBE", "CRM", "NOW", "INTU", "PANW", "SNOW", "TEAM"],
+        "IYE": ["XOM", "CVX", "COP", "SLB", "EOG", "PSX", "MPC", "VLO", "KMI"],
+        "IYM": ["LIN", "SHW", "FCX", "NEM", "APD", "ECL", "DOW", "DD", "PPG"],
+        "IDU": ["NEE", "DUK", "SO", "D", "AEP", "EXC", "SRE", "XEL", "PEG"],
+    }
 
-    Returns
-    -------
-    dict[str, list[str]]
-        Mapping from ETF ticker -> list of constituent tickers (may be empty).
-    """
     etf_to_tickers: Dict[str, List[str]] = {}
     for etf in top_industries["Ticker"].dropna().astype(str).tolist():
-        etf_to_tickers[etf] = get_top_holdings(etf, top_k=top_k_holdings)
+        holdings = get_top_holdings(etf, top_k=top_k_holdings)
+        if not holdings:
+            holdings = FALLBACK.get(etf, [])
+        etf_to_tickers[etf] = holdings[:top_k_holdings]
     return etf_to_tickers
 
 
