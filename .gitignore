@@ -48,7 +48,6 @@ renv/staging/
 # Render Outputs
 
 *.html
-*.pdf
 *.docx
 
 # If Quarto creates _site
